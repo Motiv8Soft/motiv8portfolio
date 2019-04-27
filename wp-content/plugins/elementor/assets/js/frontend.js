@@ -1,4 +1,4 @@
-/*! elementor - v2.5.3 - 06-03-2019 */
+/*! elementor - v2.5.13 - 10-04-2019 */
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -899,13 +899,17 @@ var Frontend = function (_elementorModules$Vie) {
 	}, {
 		key: 'getDefaultElements',
 		value: function getDefaultElements() {
-			return {
+			var defaultElements = {
 				window: window,
 				$window: jQuery(window),
 				$document: jQuery(document),
 				$head: jQuery(document.head),
-				$body: jQuery(document.body)
+				$body: jQuery(document.body),
+				$deviceMode: jQuery('<span>', { id: 'elementor-device-mode', class: 'elementor-screen-only' })
 			};
+			defaultElements.$body.append(defaultElements.$deviceMode);
+
+			return defaultElements;
 		}
 	}, {
 		key: 'bindEvents',
@@ -948,7 +952,7 @@ var Frontend = function (_elementorModules$Vie) {
 	}, {
 		key: 'getCurrentDeviceMode',
 		value: function getCurrentDeviceMode() {
-			return getComputedStyle(this.elements.$head[0]).content.replace(/"/g, '');
+			return getComputedStyle(this.elements.$deviceMode[0], ':after').content.replace(/"/g, '');
 		}
 	}, {
 		key: 'getCurrentDeviceSetting',
@@ -1091,48 +1095,29 @@ var Frontend = function (_elementorModules$Vie) {
 		// Based on underscore function
 
 	}, {
-		key: 'throttle',
-		value: function throttle(func, wait) {
-			var timeout = void 0,
-			    context = void 0,
-			    args = void 0,
-			    result = void 0,
-			    previous = 0;
-
-			var later = function later() {
-				previous = Date.now();
-				timeout = null;
-				result = func.apply(context, args);
-
-				if (!timeout) {
-					context = args = null;
-				}
-			};
+		key: 'debounce',
+		value: function debounce(func, wait) {
+			var timeout = void 0;
 
 			return function () {
-				var now = Date.now(),
-				    remaining = wait - (now - previous);
+				var context = this,
+				    args = arguments;
 
-				context = this;
-				args = arguments;
+				var later = function later() {
+					timeout = null;
 
-				if (remaining <= 0 || remaining > wait) {
-					if (timeout) {
-						clearTimeout(timeout);
-						timeout = null;
-					}
+					func.apply(context, args);
+				};
 
-					previous = now;
-					result = func.apply(context, args);
+				var callNow = !timeout;
 
-					if (!timeout) {
-						context = args = null;
-					}
-				} else if (!timeout) {
-					timeout = setTimeout(later, remaining);
+				clearTimeout(timeout);
+
+				timeout = setTimeout(later, wait);
+
+				if (callNow) {
+					func.apply(context, args);
 				}
-
-				return result;
 			};
 		}
 	}, {
@@ -1421,13 +1406,11 @@ module.exports = function ($) {
 
 		elementorFrontend.hooks.doAction('frontend/element_ready/global', $scope, $);
 
-		var isWidgetType = -1 === ['section', 'column'].indexOf(elementType);
-
-		if (isWidgetType) {
-			elementorFrontend.hooks.doAction('frontend/element_ready/widget', $scope, $);
-		}
-
 		elementorFrontend.hooks.doAction('frontend/element_ready/' + elementType, $scope, $);
+
+		if ('widget' === elementType) {
+			elementorFrontend.hooks.doAction('frontend/element_ready/' + $scope.attr('data-widget_type'), $scope, $);
+		}
 	};
 
 	init();
@@ -1490,11 +1473,7 @@ var BackgroundVideo = elementorModules.frontend.handlers.Base.extend({
 		var $video = this.isYTVideo ? jQuery(this.player.getIframe()) : this.elements.$backgroundVideoHosted,
 		    size = this.calcVideosSize();
 
-		$video.width(size.width);
-
-		if (this.isYTVideo) {
-			$video.height(size.height);
-		}
+		$video.width(size.width).height(size.height);
 	},
 
 	startVideoLoop: function startVideoLoop() {
@@ -1561,8 +1540,6 @@ var BackgroundVideo = elementorModules.frontend.handlers.Base.extend({
 				rel: 0
 			}
 		});
-
-		elementorFrontend.elements.$window.on('resize', self.changeVideoSize);
 	},
 
 	activate: function activate() {
@@ -1581,6 +1558,8 @@ var BackgroundVideo = elementorModules.frontend.handlers.Base.extend({
 		} else {
 			self.elements.$backgroundVideoHosted.attr('src', videoLink).one('canplay', self.changeVideoSize);
 		}
+
+		elementorFrontend.elements.$window.on('resize', self.changeVideoSize);
 	},
 
 	deactivate: function deactivate() {
@@ -1589,6 +1568,8 @@ var BackgroundVideo = elementorModules.frontend.handlers.Base.extend({
 		} else {
 			this.elements.$backgroundVideoHosted.removeAttr('src');
 		}
+
+		elementorFrontend.elements.$window.off('resize', this.changeVideoSize);
 	},
 
 	run: function run() {
@@ -1717,9 +1698,10 @@ var Shapes = elementorModules.frontend.handlers.Base.extend({
 		    shapeType = self.getElementSettings(baseSettingKey),
 		    $svgContainer = this.elements['$' + side + 'Container'];
 
-		$svgContainer.empty().attr('data-shape', shapeType);
+		$svgContainer.attr('data-shape', shapeType);
 
 		if (!shapeType) {
+			$svgContainer.empty(); // Shape-divider set to 'none'
 			return;
 		}
 
@@ -1732,7 +1714,7 @@ var Shapes = elementorModules.frontend.handlers.Base.extend({
 		var svgURL = self.getSvgURL(shapeType, fileName);
 
 		jQuery.get(svgURL, function (data) {
-			$svgContainer.append(data.childNodes[0]);
+			$svgContainer.empty().append(data.childNodes[0]);
 		});
 
 		this.setNegative(side);
@@ -1775,8 +1757,12 @@ var Shapes = elementorModules.frontend.handlers.Base.extend({
 
 var HandlesPosition = elementorModules.frontend.handlers.Base.extend({
 
-	isFirst: function isFirst() {
+	isFirstSection: function isFirstSection() {
 		return this.$element.is('.elementor-edit-mode .elementor-top-section:first');
+	},
+
+	isOverflowHidden: function isOverflowHidden() {
+		return 'hidden' === this.$element.css('overflow');
 	},
 
 	getOffset: function getOffset() {
@@ -1789,18 +1775,18 @@ var HandlesPosition = elementorModules.frontend.handlers.Base.extend({
 	},
 
 	setHandlesPosition: function setHandlesPosition() {
-		var self = this;
+		var isOverflowHidden = this.isOverflowHidden();
 
-		if (!self.isFirst()) {
+		if (!isOverflowHidden && !this.isFirstSection()) {
 			return;
 		}
 
-		var offset = self.getOffset(),
-		    $handlesElement = self.$element.find('> .elementor-element-overlay > .elementor-editor-section-settings'),
+		var offset = isOverflowHidden ? 0 : this.getOffset(),
+		    $handlesElement = this.$element.find('> .elementor-element-overlay > .elementor-editor-section-settings'),
 		    insideHandleClass = 'elementor-section--handles-inside';
 
 		if (offset < 25) {
-			self.$element.addClass(insideHandleClass);
+			this.$element.addClass(insideHandleClass);
 
 			if (offset < -5) {
 				$handlesElement.css('top', -offset);
@@ -1808,12 +1794,13 @@ var HandlesPosition = elementorModules.frontend.handlers.Base.extend({
 				$handlesElement.css('top', '');
 			}
 		} else {
-			self.$element.removeClass(insideHandleClass);
+			this.$element.removeClass(insideHandleClass);
 		}
 	},
 
 	onInit: function onInit() {
 		this.setHandlesPosition();
+
 		this.$element.on('mouseenter', this.setHandlesPosition);
 	}
 });
@@ -2147,10 +2134,6 @@ var TextEditor = elementorModules.frontend.handlers.Base.extend({
 		};
 	},
 
-	getElementName: function getElementName() {
-		return 'text-editor';
-	},
-
 	wrapDropCap: function wrapDropCap() {
 		var isDropCapEnabled = this.getElementSettings('drop_cap');
 
@@ -2225,13 +2208,19 @@ module.exports = function ($scope) {
 
 
 var GlobalHandler = elementorModules.frontend.handlers.Base.extend({
-	getElementName: function getElementName() {
+	getWidgetType: function getWidgetType() {
 		return 'global';
 	},
 	animate: function animate() {
 		var $element = this.$element,
-		    animation = this.getAnimation(),
-		    elementSettings = this.getElementSettings(),
+		    animation = this.getAnimation();
+
+		if ('none' === animation) {
+			$element.removeClass('elementor-invisible');
+			return;
+		}
+
+		var elementSettings = this.getElementSettings(),
 		    animationDelay = elementSettings._animation_delay || elementSettings.animation_delay || 0;
 
 		$element.removeClass(animation);

@@ -1,4 +1,4 @@
-/*! elementor - v2.5.3 - 06-03-2019 */
+/*! elementor - v2.5.13 - 10-04-2019 */
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -476,11 +476,12 @@ module.exports = elementorModules.ViewModule.extend({
 		}];
 
 		if (self.onElementChange) {
-			var elementName = self.getElementName(),
-			    eventName = 'change';
+			var elementType = self.getWidgetType() || self.getElementType();
 
-			if ('global' !== elementName) {
-				eventName += ':' + elementName;
+			var eventName = 'change';
+
+			if ('global' !== elementType) {
+				eventName += ':' + elementType;
 			}
 
 			self.editorListeners.push({
@@ -551,8 +552,18 @@ module.exports = elementorModules.ViewModule.extend({
 		});
 	},
 
-	getElementName: function getElementName() {
-		return this.$element.data('element_type').split('.')[0];
+	getElementType: function getElementType() {
+		return this.$element.data('element_type');
+	},
+
+	getWidgetType: function getWidgetType() {
+		var widgetType = this.$element.data('widget_type');
+
+		if (!widgetType) {
+			return;
+		}
+
+		return widgetType.split('.')[0];
 	},
 
 	getID: function getID() {
@@ -570,7 +581,13 @@ module.exports = elementorModules.ViewModule.extend({
 
 		if (this.isEdit && modelCID) {
 			var settings = elementorFrontend.config.elements.data[modelCID],
-			    type = settings.attributes.widgetType || settings.attributes.elType;
+			    attributes = settings.attributes;
+
+			var type = attributes.widgetType || attributes.elType;
+
+			if (attributes.isInner) {
+				type = 'inner-' + type;
+			}
 
 			var settingsKeys = elementorFrontend.config.elements.keys[type];
 
@@ -586,7 +603,7 @@ module.exports = elementorModules.ViewModule.extend({
 
 			jQuery.each(settings.getActiveControls(), function (controlKey) {
 				if (-1 !== settingsKeys.indexOf(controlKey)) {
-					elementSettings[controlKey] = settings.attributes[controlKey];
+					elementSettings[controlKey] = attributes[controlKey];
 				}
 			});
 		} else {
@@ -657,7 +674,7 @@ var Module = function Module() {
 		var instanceSettings = instanceParams[0];
 
 		if (instanceSettings) {
-			$.extend(settings, instanceSettings);
+			$.extend(true, settings, instanceSettings);
 		}
 	};
 

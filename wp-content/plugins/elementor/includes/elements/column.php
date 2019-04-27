@@ -286,6 +286,7 @@ class Element_Column extends Element_Base {
 				'label' => __( 'HTML Tag', 'elementor' ),
 				'type' => Controls_Manager::SELECT,
 				'options' => $options,
+				'render_type' => 'none',
 			]
 		);
 
@@ -1071,8 +1072,6 @@ class Element_Column extends Element_Base {
 				'elementor-' . $column_type . '-column',
 			]
 		);
-
-		$this->add_render_attribute( '_wrapper', 'data-element_type', $this->get_name() );
 	}
 
 	/**
