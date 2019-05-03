@@ -6,7 +6,7 @@
 	Plugin URI: http://webdevocean.com/image-hover-effects
 	Author: Labib Ahmed
 	Author URI: http://webdevocean.com
-	Version: 4.7.7
+	Version: 4.7.8
 	License: GPL2
 	Text Domain: la-captionhover
 	*/

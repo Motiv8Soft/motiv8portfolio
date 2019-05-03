@@ -479,13 +479,18 @@
 							</table> <br> <hr>
 							<button class="button removeitem"><span class="dashicons dashicons-dismiss" title="Delete"></span><?php _e( 'Remove Image', 'la-captionhover' ); ?></button> 
 							
-				       	<span class="moreimages">
-				    		<button class="button moreimg"><b title="Add New" class="dashicons dashicons-plus-alt"></b> <?php _e( 'Add Image', 'la-captionhover' ); ?></button>
-							<button class="button-primary addcat"><?php _e( 'Add Category', 'la-captionhover' ); ?></button>
-							<button class="button-primary fullshortcode pull-right" id="<?php echo $data2['shortcode']; ?>"><?php _e( 'Get Shortcode', 'la-captionhover' ); ?></button>
-							<button class="button removecat pull-right"><?php _e( 'Remove Category', 'la-captionhover' ); ?></button>
-				    	</span>
+					       	<span class="moreimages">
+					    		<button class="button moreimg"><b title="Add New" class="dashicons dashicons-plus-alt"></b> <?php _e( 'Add Image', 'la-captionhover' ); ?></button>
+								<button class="button-primary addcat"><?php _e( 'Add Category', 'la-captionhover' ); ?></button>
+								<button class="button-primary wdo-preview-button" title="Click to Preview Images.First Save Images."><b class="dashicons dashicons-visibility"></b> <?php _e( 'Preview', 'la-captionhover' ); ?></button>
+								<button class="button-primary fullshortcode pull-right" id="<?php echo $data2['shortcode']; ?>"><?php _e( 'Get Shortcode', 'la-captionhover' ); ?></button>
+								<button class="button removecat pull-right"><?php _e( 'Remove Category', 'la-captionhover' ); ?></button>
+					    	</span>
 
+					    	<div class="preview-container" style="display: none;">
+                                <?php echo do_shortcode("[image-caption-hover id='".$data2['shortcode']."']"); ?>
+                            </div>
+ 
 				        </div> 
 				        <?php } ?>
 
@@ -860,11 +865,15 @@
 							<hr>
 							<button class="button removeitem"><span class="dashicons dashicons-dismiss" title="Delete"></span><?php _e( 'Remove Image', 'la-captionhover' ); ?></button> 
 							<span class="moreimages">
-				    		<button class="button moreimg"><b title="Add New" class="dashicons dashicons-plus-alt"></b><?php _e( 'Add Image', 'la-captionhover' ); ?></button>
-							<button class="button-primary addcat"><?php _e( 'Add Category', 'la-captionhover' ); ?></button>
-							<button class="button-primary fullshortcode pull-right" id="1"><?php _e( 'Get Shortcode', 'la-captionhover' ); ?></button>
-							<button class="button removecat pull-right"><?php _e( 'Remove Category', 'la-captionhover' ); ?></button>
-				    	</span>
+					    		<button class="button moreimg"><b title="Add New" class="dashicons dashicons-plus-alt"></b><?php _e( 'Add Image', 'la-captionhover' ); ?></button>
+								<button class="button-primary addcat"><?php _e( 'Add Category', 'la-captionhover' ); ?></button>
+								<button class="button-primary wdo-preview-button" title="Click to Preview Images.First Save Images."><b class="dashicons dashicons-visibility"></b> <?php _e( 'Preview', 'la-captionhover' ); ?></button>
+								<button class="button-primary fullshortcode pull-right" id="1"><?php _e( 'Get Shortcode', 'la-captionhover' ); ?></button>
+								<button class="button removecat pull-right"><?php _e( 'Remove Category', 'la-captionhover' ); ?></button>
+					    	</span>
+					    	<div class="preview-container" style="display: none;">
+                                <?php echo do_shortcode("[image-caption-hover id='1']"); ?>
+                            </div>
 				        </div>
 
 				       	

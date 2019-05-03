@@ -1429,7 +1429,7 @@ class Element_Section extends Element_Base {
 		<# if ( settings.background_video_link ) { #>
 			<div class="elementor-background-video-container elementor-hidden-phone">
 				<div class="elementor-background-video-embed"></div>
-				<video class="elementor-background-video-hosted" autoplay loop muted></video>
+				<video class="elementor-background-video-hosted elementor-html5-video" autoplay loop muted></video>
 			</div>
 		<# } #>
 		<div class="elementor-background-overlay"></div>
@@ -1527,8 +1527,6 @@ class Element_Section extends Element_Base {
 				'elementor-' . $section_type . '-section',
 			]
 		);
-
-		$this->add_render_attribute( '_wrapper', 'data-element_type', $this->get_name() );
 	}
 
 	/**

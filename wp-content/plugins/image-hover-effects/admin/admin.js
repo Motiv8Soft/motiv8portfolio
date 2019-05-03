@@ -1,5 +1,12 @@
 jQuery(document).ready(function($) {
 
+    /***** Preview Shortcode Start ********/
+
+    $('.wdo-preview-button').click(function(){
+         $('.preview-container').toggle();
+    });
+    /***** Preview Shortcode End ********/
+
     jQuery('.moreimages span').remove();
     jQuery('.preview').hide();
     jQuery('#la-loader').hide();
@@ -256,13 +263,12 @@ jQuery(document).ready(function($) {
         } 
 
          jQuery.post(laAjax.url, data, function(resp) {
-            console.log(resp);
             window.location.reload(true);
             jQuery('#la-loader').hide();
             jQuery('#la-saved').show();
             jQuery('#la-saved').delay(2000).fadeOut();
         });
-         
+          
     });
 
     jQuery('.content').on('click','button.fullshortcode',function(event) {
